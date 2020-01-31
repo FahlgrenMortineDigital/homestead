@@ -394,6 +394,26 @@ class Homestead
             s.args = [site['map'].tr('^A-Za-z0-9', '')]
           end
         end
+
+        # Fahlgren - Configure pimcore crons
+        if site.has_key?('crons') && (site['type'] ||= 'laravel') == 'pimcore'
+          config.vm.provision 'shell' do |s|
+            s.name = 'Running Pimcore crons'
+            s.path = script_dir + '/fahlgren-pimcore-crons.sh'
+            _crons = Array.new
+            _crons.push site['map']
+            _crons.push site['to']
+
+            site['crons'].each do | cron_config |
+              cron_name = cron_config.keys[0]
+              schedule = cron_config[cron_name]
+
+              _crons.push "#{cron_name}:#{schedule}"
+            end
+
+            s.args = _crons
+          end
+        end
       end
 
       # config.vm.provision 'shell' do |s|
